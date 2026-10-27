@@ -19,9 +19,9 @@ export const Footer = () => (
   <footer className="on-dark bg-ink pt-16 pb-28 text-white md:pb-10">
     <div className="container-page">
       <div className="grid gap-12 md:grid-cols-3">
-        <div>
-          <Monogram size={72} />
-          <Wordmark tone="dark" size="md" className="mt-5" />
+        <div className="flex w-fit flex-col items-center">
+          <Monogram size={104} />
+          <Wordmark tone="dark" size="md" className="mt-4" />
         </div>
 
         <div>

@@ -33,7 +33,7 @@ export const Hero = () => {
       />
 
       <div className="container-page flex max-w-3xl flex-col items-center pt-28 pb-20 text-center">
-        <Monogram size={88} className="border border-gold-light/60" />
+        <Monogram size={120} />
         <h1 id="hero-title" className="mt-5">
           <Wordmark tone="dark" size="lg" />
         </h1>
