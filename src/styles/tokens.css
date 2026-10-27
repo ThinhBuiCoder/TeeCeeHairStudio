@@ -1,0 +1,43 @@
+/*
+ * Design tokens TEECEE. Đổi màu/font/bo góc tại đây, không sửa rải rác trong component.
+ * `static` để mọi biến luôn xuất ra :root (dùng được cả var(--color-gold) trong CSS tuỳ biến).
+ */
+@theme static {
+  /* Nền & chữ */
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+  --color-ink: #111111;
+  --color-charcoal: #1c1c1e;
+  --color-muted: #6b6b6b;
+  --color-border: #e8e4dd;
+
+  /* Nhấn thương hiệu. Vàng #b8985a chỉ dùng cho đường kẻ/icon/viền, KHÔNG làm chữ trên nền sáng (tương phản ~2.6:1). */
+  --color-gold: #b8985a;
+  --color-gold-light: #d9c08a;
+  --color-gold-dark: #8a6d2f;
+  --color-green: #4f7a5a;
+
+  /* Trạng thái */
+  --color-success: #2e7d4f;
+  --color-warning: #b7791f;
+  --color-error: #c0392b;
+  --color-info: #2b6cb0;
+
+  /* Tên ngắn cho class Tailwind: bg-paper, border-line, text-leaf, text-danger */
+  --color-paper: var(--color-bg);
+  --color-line: var(--color-border);
+  --color-leaf: var(--color-green);
+  --color-danger: var(--color-error);
+
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-card: 12px;
+  --radius-field: 8px;
+
+  --shadow-soft: 0 1px 2px rgb(17 17 17 / 0.04), 0 10px 28px -14px rgb(17 17 17 / 0.16);
+}
+
+:root {
+  --glow-gold: 0 0 28px -8px rgb(217 192 138 / 0.55);
+}

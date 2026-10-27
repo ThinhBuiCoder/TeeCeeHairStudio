@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# TODO: thêm dòng "Sitemap: https://<tên-miền>/sitemap.xml" khi đã có tên miền.
