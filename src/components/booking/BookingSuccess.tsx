@@ -2,10 +2,8 @@ import { CheckCircle2, Info } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { business } from '@/config/business'
-import { getServiceById, summarizeServices } from '@/data/services'
-import { getStaffName } from '@/data/team'
-import { formatDate, formatDuration, formatVND } from '@/lib/format'
-import { formatPhoneDisplay, telHref, zaloHref } from '@/lib/contact'
+import { formatDate } from '@/lib/format'
+import { formatPhoneDisplay, mailHref, telHref } from '@/lib/contact'
 import { bookingService } from '@/services/bookingService'
 import type { BookingResult } from '@/types'
 
@@ -17,10 +15,10 @@ interface BookingSuccessProps {
 export const BookingSuccess = ({ result, onReset }: BookingSuccessProps) => {
   const headingRef = useRef<HTMLHeadingElement>(null)
   const { request } = result
-  const summary = summarizeServices(request.serviceIds)
-  const serviceNames = request.serviceIds
-    .map((id) => getServiceById(id)?.name)
-    .filter((name): name is string => Boolean(name))
+  const preferences = [
+    request.quiet && 'Thích yên tĩnh, trò chuyện vừa phải',
+    request.consult && 'Cần tư vấn kỹ về kiểu tóc',
+  ].filter((text): text is string => Boolean(text))
 
   // Đưa focus về tiêu đề để người dùng bàn phím/đọc màn hình biết đã gửi xong.
   useEffect(() => {
@@ -31,12 +29,10 @@ export const BookingSuccess = ({ result, onReset }: BookingSuccessProps) => {
     ['Mã lịch', result.id],
     ['Họ tên', request.name],
     ['Số điện thoại', request.phone],
-    ['Dịch vụ', serviceNames.join(', ')],
-    ['Thợ', getStaffName(request.staffId)],
+    ['Số khách', String(request.guests)],
     ['Thời gian', `${request.time}, ${formatDate(request.date)}`],
-    ['Thời lượng dự kiến', formatDuration(summary.durationMin)],
-    ['Tạm tính', `${summary.hasRange ? 'từ ' : ''}${formatVND(summary.total)}`],
   ]
+  if (preferences.length > 0) rows.push(['Mong muốn', preferences.join('; ')])
   if (request.note) rows.push(['Ghi chú', request.note])
 
   return (
@@ -68,17 +64,12 @@ export const BookingSuccess = ({ result, onReset }: BookingSuccessProps) => {
             ) : (
               'liên hệ trực tiếp với tiệm'
             )}
-            {business.zalo && (
+            {business.email && (
               <>
                 {' '}
                 hoặc{' '}
-                <a
-                  className="font-semibold underline"
-                  href={zaloHref(business.zalo)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  nhắn Zalo
+                <a className="font-semibold underline" href={mailHref(business.email)}>
+                  gửi email
                 </a>
               </>
             )}

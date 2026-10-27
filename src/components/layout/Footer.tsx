@@ -1,10 +1,7 @@
-import { Link } from 'react-router'
 import { Monogram } from '@/components/brand/Monogram'
 import { Wordmark } from '@/components/brand/Wordmark'
-import { AnchorLink } from '@/components/ui/AnchorLink'
 import { business } from '@/config/business'
-import { navItems } from '@/data/site'
-import { formatPhoneDisplay, telHref, zaloHref } from '@/lib/contact'
+import { formatPhoneDisplay, mailHref, telHref } from '@/lib/contact'
 
 const socials = [
   { label: 'Facebook', href: business.facebook },
@@ -12,65 +9,50 @@ const socials = [
   { label: 'TikTok', href: business.tiktok },
 ].filter((s): s is { label: string; href: string } => Boolean(s.href))
 
-const linkClass =
-  'inline-flex min-h-11 items-center text-white/75 transition-colors hover:text-white'
+// Mọi dòng ở cột Giờ làm việc và Liên hệ dùng chung chiều cao tối thiểu để dòng đầu và khoảng cách thẳng hàng.
+const rowClass = 'flex min-h-11 items-center text-white/75'
 
+const linkClass = 'inline-flex min-h-11 items-center transition-colors hover:text-white'
+
+/** Chân trang 3 cột như trang tham khảo: thương hiệu, giờ làm việc, liên hệ và mạng xã hội. */
 export const Footer = () => (
   <footer className="on-dark bg-ink pt-16 pb-28 text-white md:pb-10">
     <div className="container-page">
-      <div className="grid gap-12 md:grid-cols-[1.2fr_1fr_1fr]">
+      <div className="grid gap-12 md:grid-cols-3">
         <div>
           <Monogram size={72} />
           <Wordmark tone="dark" size="md" className="mt-5" />
-          <p className="mt-5 max-w-xs text-sm text-white/70">{business.description}</p>
         </div>
 
-        <nav aria-label="Điều hướng chân trang">
-          <h2 className="eyebrow text-gold-light">Khám phá</h2>
-          <ul className="mt-4">
-            {navItems.map((item) => (
-              <li key={item.target}>
-                <AnchorLink target={item.target} className={linkClass}>
-                  {item.label}
-                </AnchorLink>
-              </li>
-            ))}
-            <li>
-              <Link to="/dat-lich" className={linkClass}>
-                Đặt lịch
-              </Link>
+        <div>
+          <h2 className="eyebrow text-gold-light">Giờ làm việc</h2>
+          <ul className="mt-3">
+            <li className={rowClass}>
+              Mỗi ngày: {business.hours.open} – {business.hours.close}
             </li>
+            <li className={rowClass}>{business.address ?? 'Địa chỉ đang cập nhật'}</li>
           </ul>
-        </nav>
+        </div>
 
         <div>
           <h2 className="eyebrow text-gold-light">Liên hệ</h2>
-          <ul className="mt-4 space-y-1">
-            <li className="py-2 text-white/75">
-              {business.hours.open} – {business.hours.close}, mỗi ngày
-            </li>
-            <li className="py-2 text-white/75">{business.address ?? 'Địa chỉ đang cập nhật'}</li>
+          <ul className="mt-3">
             {business.phone && (
-              <li>
+              <li className={rowClass}>
                 <a href={telHref(business.phone)} className={linkClass}>
                   {formatPhoneDisplay(business.phone)}
                 </a>
               </li>
             )}
-            {business.zalo && (
-              <li>
-                <a
-                  href={zaloHref(business.zalo)}
-                  className={linkClass}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Zalo: {formatPhoneDisplay(business.zalo)}
+            {business.email && (
+              <li className={rowClass}>
+                <a href={mailHref(business.email)} className={linkClass}>
+                  {business.email}
                 </a>
               </li>
             )}
             {socials.map((s) => (
-              <li key={s.label}>
+              <li key={s.label} className={rowClass}>
                 <a href={s.href} className={linkClass} target="_blank" rel="noopener noreferrer">
                   {s.label}
                 </a>
@@ -80,9 +62,9 @@ export const Footer = () => (
         </div>
       </div>
 
-      <div className="mt-14 border-t border-white/15 pt-6 text-sm text-white/60">
-        © {new Date().getFullYear()} {business.fullName}. Bảo lưu mọi quyền.
-      </div>
+      <p className="mx-auto mt-14 max-w-md text-center text-sm text-white/70 md:max-w-none md:whitespace-nowrap">
+        {business.description}
+      </p>
     </div>
   </footer>
 )

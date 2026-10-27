@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { business } from '@/config/business'
-import { summarizeServices } from '@/data/services'
 import { toDateKey } from '@/lib/format'
 import { getAvailableSlots } from '@/lib/slots'
 import { isVietnamesePhone } from '@/lib/validators'
 
 export const NOTE_MAX = 300
+export const MAX_GUESTS = 5
 
 export const bookingSchema = z
   .object({
@@ -19,8 +19,9 @@ export const bookingSchema = z
       .trim()
       .min(1, 'Vui lòng nhập số điện thoại.')
       .refine(isVietnamesePhone, 'Số điện thoại chưa đúng. Ví dụ: 0901 234 567.'),
-    serviceIds: z.array(z.string()).min(1, 'Vui lòng chọn ít nhất một dịch vụ.'),
-    staffId: z.string().min(1),
+    guests: z.number().int().min(1).max(MAX_GUESTS),
+    quiet: z.boolean(),
+    consult: z.boolean(),
     date: z.string().min(1, 'Vui lòng chọn ngày.'),
     time: z.string().min(1, 'Vui lòng chọn giờ.'),
     note: z.string().max(NOTE_MAX, `Ghi chú tối đa ${NOTE_MAX} ký tự.`),
@@ -36,9 +37,8 @@ export const bookingSchema = z
       })
       return
     }
-    // Kiểm tra lại giờ so với khung mở cửa, bước giờ và thời lượng dịch vụ (không chỉ tin vào giao diện).
-    const { durationMin } = summarizeServices(value.serviceIds)
-    if (!getAvailableSlots(value.date, durationMin, now).includes(value.time)) {
+    // Kiểm tra lại giờ so với khung mở cửa và bước giờ (không chỉ tin vào giao diện).
+    if (!getAvailableSlots(value.date, now).includes(value.time)) {
       ctx.addIssue({
         code: 'custom',
         path: ['time'],

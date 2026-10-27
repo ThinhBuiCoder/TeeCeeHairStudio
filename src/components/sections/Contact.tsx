@@ -1,10 +1,10 @@
-import { Clock, Globe, MapPin, MessageCircle, Phone, type LucideIcon } from 'lucide-react'
+import { Clock, Globe, MapPin, Mail, Phone, type LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage'
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { business } from '@/config/business'
-import { formatPhoneDisplay, telHref, zaloHref } from '@/lib/contact'
+import { formatPhoneDisplay, mailHref, telHref } from '@/lib/contact'
 
 interface RowProps {
   icon: LucideIcon
@@ -33,7 +33,7 @@ const linkClass =
   'font-medium text-ink underline decoration-gold underline-offset-4 hover:decoration-2'
 
 export const Contact = () => (
-  <section id="lien-he" aria-labelledby="contact-title" className="py-20 md:py-28">
+  <section id="lien-he" aria-labelledby="contact-title" className="pb-20 md:pb-28">
     <div className="container-page">
       <Reveal>
         <SectionHeading
@@ -75,15 +75,10 @@ export const Contact = () => (
                 pending
               )}
             </Row>
-            <Row icon={MessageCircle} label="Zalo">
-              {business.zalo ? (
-                <a
-                  href={zaloHref(business.zalo)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={linkClass}
-                >
-                  {formatPhoneDisplay(business.zalo)}
+            <Row icon={Mail} label="Email">
+              {business.email ? (
+                <a href={mailHref(business.email)} className={linkClass}>
+                  {business.email}
                 </a>
               ) : (
                 pending
@@ -97,7 +92,7 @@ export const Contact = () => (
                   rel="noopener noreferrer"
                   className={linkClass}
                 >
-                  Trang Facebook của tiệm
+                  TeeCee Hair Studio
                 </a>
               ) : (
                 pending

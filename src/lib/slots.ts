@@ -19,17 +19,12 @@ export const getBookableDates = (now: Date = new Date()): string[] =>
 
 /**
  * Giờ bắt đầu còn đặt được trong ngày `date`.
- * - Nằm trong khung giờ mở cửa, bước slotMinutes.
- * - Dịch vụ phải làm xong trước giờ đóng cửa (muộn nhất = đóng cửa - tổng thời lượng).
+ * - Nằm trong khung giờ mở cửa, bước slotMinutes; giờ muộn nhất là một bước trước giờ đóng cửa.
  * - Với hôm nay: bỏ giờ đã qua và giờ chưa đủ leadMinutes.
  */
-export const getAvailableSlots = (
-  date: string,
-  durationMin: number,
-  now: Date = new Date(),
-): string[] => {
+export const getAvailableSlots = (date: string, now: Date = new Date()): string[] => {
   const { open, close, slotMinutes, leadMinutes } = business.hours
-  const lastStart = toMinutes(close) - Math.max(durationMin, slotMinutes)
+  const lastStart = toMinutes(close) - slotMinutes
   const earliest =
     date === toDateKey(now) ? now.getHours() * 60 + now.getMinutes() + leadMinutes : 0
 

@@ -1,53 +1,43 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, CalendarCheck, MapPin } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useForm, useWatch, type FieldErrors } from 'react-hook-form'
-import { useSearchParams } from 'react-router'
 import { BookingSuccess } from '@/components/booking/BookingSuccess'
 import { Button } from '@/components/ui/Button'
 import { ChoiceChip } from '@/components/ui/ChoiceChip'
 import { TextareaField, TextField } from '@/components/ui/Field'
 import { business } from '@/config/business'
-import { getServiceById, services, summarizeServices } from '@/data/services'
-import { ANY_STAFF_ID, team } from '@/data/team'
 import { useNow } from '@/hooks/useNow'
-import { bookingSchema, NOTE_MAX, type BookingFormValues } from '@/lib/bookingSchema'
-import { cn } from '@/lib/cn'
-import {
-  formatDayMonth,
-  formatDuration,
-  formatPriceRange,
-  formatVND,
-  formatWeekday,
-} from '@/lib/format'
+import { bookingSchema, MAX_GUESTS, NOTE_MAX, type BookingFormValues } from '@/lib/bookingSchema'
+import { mapsSearchHref } from '@/lib/contact'
+import { formatDayMonth, formatWeekday } from '@/lib/format'
 import { getAvailableSlots, getBookableDates } from '@/lib/slots'
 import { normalizePhone } from '@/lib/validators'
 import { BookingError, bookingService } from '@/services/bookingService'
 import type { BookingResult } from '@/types'
 
-const FIELD_ORDER = ['name', 'phone', 'serviceIds', 'staffId', 'date', 'time', 'note'] as const
+const FIELD_ORDER = ['phone', 'name', 'date', 'time', 'note'] as const
+
+const GUEST_OPTIONS = Array.from({ length: MAX_GUESTS }, (_, i) => i + 1)
+
+const PREFERENCES = [
+  { name: 'quiet', label: 'Mình thích yên tĩnh, trò chuyện vừa phải thôi' },
+  { name: 'consult', label: 'Mình cần được tư vấn kỹ về kiểu tóc' },
+] as const
 
 const legendClass = 'mb-4 flex items-baseline gap-3 font-display text-2xl font-bold text-ink'
 const stepClass = 'font-sans text-sm font-semibold text-gold-dark'
 
-/** Đọc ?dich-vu=a,b và ?tho=id từ đường dẫn (nút "Đặt dịch vụ này", "Đặt với ..."), bỏ qua id không tồn tại. */
-const getInitialValues = (params: URLSearchParams, now: Date): BookingFormValues => {
-  const serviceIds = (params.get('dich-vu') ?? '')
-    .split(',')
-    .filter((id) => Boolean(getServiceById(id)))
-  const staffParam = params.get('tho')
-  const staffId = team.some((t) => t.id === staffParam) ? (staffParam as string) : ANY_STAFF_ID
-  const duration = summarizeServices(serviceIds).durationMin
+const getInitialValues = (now: Date): BookingFormValues => {
   const dates = getBookableDates(now)
   // Mặc định là ngày gần nhất còn giờ trống (sau giờ đóng cửa thì là ngày mai).
-  const date = dates.find((d) => getAvailableSlots(d, duration, now).length > 0) ?? dates[0] ?? ''
-  return { name: '', phone: '', serviceIds, staffId, date, time: '', note: '' }
+  const date = dates.find((d) => getAvailableSlots(d, now).length > 0) ?? dates[0] ?? ''
+  return { name: '', phone: '', guests: 1, quiet: false, consult: false, date, time: '', note: '' }
 }
 
 export const BookingForm = () => {
-  const [searchParams] = useSearchParams()
   const now = useNow()
-  const [initial] = useState(() => getInitialValues(searchParams, now))
+  const [initial] = useState(() => getInitialValues(now))
   const [result, setResult] = useState<BookingResult | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const submittingRef = useRef(false)
@@ -66,34 +56,17 @@ export const BookingForm = () => {
     mode: 'onTouched',
   })
 
-  const serviceIds = useWatch({ control, name: 'serviceIds' })
-  const staffId = useWatch({ control, name: 'staffId' })
+  const guests = useWatch({ control, name: 'guests' })
   const date = useWatch({ control, name: 'date' })
   const time = useWatch({ control, name: 'time' })
   const note = useWatch({ control, name: 'note' })
 
-  const summary = summarizeServices(serviceIds)
   const dates = getBookableDates(now)
-  const slots = getAvailableSlots(date, summary.durationMin, now)
-
-  const clearTimeIfUnavailable = (nextDate: string, nextServiceIds: string[]): void => {
-    const nextSlots = getAvailableSlots(
-      nextDate,
-      summarizeServices(nextServiceIds).durationMin,
-      now,
-    )
-    if (!nextSlots.includes(getValues('time'))) setValue('time', '')
-  }
-
-  const toggleService = (id: string): void => {
-    const next = serviceIds.includes(id) ? serviceIds.filter((s) => s !== id) : [...serviceIds, id]
-    setValue('serviceIds', next, { shouldValidate: true, shouldDirty: true })
-    clearTimeIfUnavailable(date, next)
-  }
+  const slots = getAvailableSlots(date, now)
 
   const pickDate = (next: string): void => {
     setValue('date', next, { shouldValidate: true, shouldDirty: true })
-    clearTimeIfUnavailable(next, serviceIds)
+    if (!getAvailableSlots(next, now).includes(getValues('time'))) setValue('time', '')
   }
 
   const onSubmit = async (values: BookingFormValues): Promise<void> => {
@@ -105,8 +78,9 @@ export const BookingForm = () => {
         await bookingService.createBooking({
           name: values.name.trim(),
           phone: normalizePhone(values.phone),
-          serviceIds: values.serviceIds,
-          staffId: values.staffId,
+          guests: values.guests,
+          quiet: values.quiet,
+          consult: values.consult,
           date: values.date,
           time: values.time,
           note: values.note.trim(),
@@ -132,7 +106,7 @@ export const BookingForm = () => {
   const resetAll = (): void => {
     setResult(null)
     setSubmitError(null)
-    reset(getInitialValues(new URLSearchParams(), now))
+    reset(getInitialValues(now))
   }
 
   if (result) return <BookingSuccess result={result} onReset={resetAll} />
@@ -149,22 +123,31 @@ export const BookingForm = () => {
       noValidate
       onSubmit={(event) => void handleSubmit(onSubmit, onInvalid)(event)}
       aria-busy={isSubmitting}
-      className="space-y-10 rounded-card border border-line bg-surface p-6 shadow-soft sm:p-10"
+      className="space-y-9 rounded-card border border-line bg-surface p-5 shadow-soft sm:p-8"
     >
+      {business.address && (
+        <div className="flex items-center gap-3 rounded-field border border-line bg-paper p-4">
+          <MapPin aria-hidden="true" className="size-5 shrink-0 text-gold-dark" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-ink">{business.fullName}</p>
+            <p className="text-sm text-muted">{business.address}</p>
+          </div>
+          <a
+            href={business.mapDirectionsUrl ?? mapsSearchHref(business.address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-charcoal px-4 text-xs font-semibold text-white transition-colors hover:bg-ink"
+          >
+            Xem vị trí
+          </a>
+        </div>
+      )}
+
       {/* 1. Thông tin */}
       <fieldset className="min-w-0 space-y-5">
         <legend className={legendClass}>
           <span className={stepClass}>01</span>Thông tin của bạn
         </legend>
-        <TextField
-          id="booking-name"
-          label="Họ tên"
-          required
-          autoComplete="name"
-          placeholder="Nguyễn Văn A"
-          error={errors.name?.message}
-          {...register('name')}
-        />
         <TextField
           id="booking-phone"
           label="Số điện thoại"
@@ -177,91 +160,53 @@ export const BookingForm = () => {
           error={errors.phone?.message}
           {...register('phone')}
         />
+        <TextField
+          id="booking-name"
+          label="Họ và tên"
+          required
+          autoComplete="name"
+          placeholder="Nguyễn Văn A"
+          error={errors.name?.message}
+          {...register('name')}
+        />
       </fieldset>
 
-      {/* 2. Dịch vụ */}
-      <fieldset
-        id="booking-serviceIds"
-        tabIndex={-1}
-        aria-describedby={errors.serviceIds ? 'booking-serviceIds-error' : undefined}
-        className="min-w-0 outline-none"
-      >
-        <legend className={legendClass}>
-          <span className={stepClass}>02</span>Chọn dịch vụ
-        </legend>
-        {services.length === 0 ? (
-          <p className="rounded-field border border-dashed border-line p-4 text-muted">
-            Danh sách dịch vụ đang được cập nhật. Vui lòng liên hệ trực tiếp với tiệm để đặt lịch.
-          </p>
-        ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {services.map((service) => {
-              const checked = serviceIds.includes(service.id)
-              return (
-                <li key={service.id}>
-                  <label
-                    className={cn(
-                      'flex min-h-14 cursor-pointer items-start gap-3 rounded-field border p-3.5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink',
-                      checked ? 'border-ink bg-ink/[0.03]' : 'border-line hover:border-muted',
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleService(service.id)}
-                      className="mt-1 size-5 shrink-0 accent-ink"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-semibold text-ink">{service.name}</span>
-                      <span className="block text-sm text-muted">
-                        {formatDuration(service.durationMin)} ·{' '}
-                        {formatPriceRange(service.price, service.priceTo)}
-                      </span>
-                    </span>
-                  </label>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-        {groupError(errors.serviceIds?.message, 'booking-serviceIds-error')}
-
-        <p aria-live="polite" className="mt-4 rounded-field bg-paper px-4 py-3 text-sm text-ink">
-          {serviceIds.length === 0 ? (
-            'Chọn dịch vụ để xem tổng thời lượng và giá tạm tính.'
-          ) : (
-            <>
-              Tổng thời lượng: <strong>{formatDuration(summary.durationMin)}</strong> · Tạm tính:{' '}
-              <strong>
-                {summary.hasRange ? 'từ ' : ''}
-                {formatVND(summary.total)}
-              </strong>
-            </>
-          )}
-        </p>
-      </fieldset>
-
-      {/* 3. Thợ */}
+      {/* 2. Số khách và mong muốn */}
       <fieldset className="min-w-0">
         <legend className={legendClass}>
-          <span className={stepClass}>03</span>Chọn thợ
+          <span className={stepClass}>02</span>Số khách
         </legend>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {[{ id: ANY_STAFF_ID, name: 'Bất kỳ thợ nào' }, ...team].map((member) => (
+        <div className="grid grid-cols-5 gap-2">
+          {GUEST_OPTIONS.map((n) => (
             <ChoiceChip
-              key={member.id}
-              name="staff"
-              value={member.id}
-              checked={staffId === member.id}
-              onChange={() => setValue('staffId', member.id, { shouldDirty: true })}
+              key={n}
+              name="guests"
+              value={String(n)}
+              checked={guests === n}
+              onChange={() => setValue('guests', n, { shouldDirty: true })}
             >
-              {member.name}
+              {n}
             </ChoiceChip>
+          ))}
+        </div>
+        <div className="mt-4 space-y-2">
+          {PREFERENCES.map((option) => (
+            <label
+              key={option.name}
+              className="flex min-h-12 cursor-pointer items-center gap-3 rounded-field border border-line px-4 py-2.5 transition-colors hover:border-muted has-[:checked]:border-ink has-[:checked]:bg-ink/[0.03] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink"
+            >
+              <input
+                type="checkbox"
+                className="size-5 shrink-0 accent-ink"
+                {...register(option.name)}
+              />
+              <span className="text-sm font-medium text-ink">{option.label}</span>
+            </label>
           ))}
         </div>
       </fieldset>
 
-      {/* 4. Ngày giờ */}
+      {/* 3. Ngày */}
       <fieldset
         id="booking-date"
         tabIndex={-1}
@@ -269,7 +214,7 @@ export const BookingForm = () => {
         className="min-w-0 outline-none"
       >
         <legend className={legendClass}>
-          <span className={stepClass}>04</span>Chọn ngày
+          <span className={stepClass}>03</span>Chọn ngày
         </legend>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 md:mx-0 md:grid md:grid-cols-7 md:overflow-visible md:px-0">
           {dates.map((d, index) => (
@@ -279,8 +224,8 @@ export const BookingForm = () => {
               value={d}
               checked={date === d}
               onChange={() => pickDate(d)}
-              disabled={getAvailableSlots(d, summary.durationMin, now).length === 0}
-              className="min-w-[4.5rem] shrink-0 md:min-w-0"
+              disabled={getAvailableSlots(d, now).length === 0}
+              className="min-w-[4.5rem] shrink-0 md:min-w-0 md:[&>span]:px-1"
             >
               <span className="flex flex-col items-center leading-tight">
                 <span className="text-xs opacity-80">
@@ -294,6 +239,7 @@ export const BookingForm = () => {
         {groupError(errors.date?.message, 'booking-date-error')}
       </fieldset>
 
+      {/* 4. Giờ */}
       <fieldset
         id="booking-time"
         tabIndex={-1}
@@ -301,17 +247,17 @@ export const BookingForm = () => {
         className="min-w-0 outline-none"
       >
         <legend className={legendClass}>
-          <span className={stepClass}>05</span>Chọn giờ
+          <span className={stepClass}>04</span>Chọn khung giờ
         </legend>
         {slots.length === 0 ? (
           <p
             role="status"
             className="rounded-field border border-dashed border-line p-4 text-muted"
           >
-            Ngày này đã hết giờ nhận lịch cho các dịch vụ bạn chọn. Vui lòng chọn ngày khác.
+            Ngày này đã hết giờ nhận lịch. Vui lòng chọn ngày khác.
           </p>
         ) : (
-          <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {slots.map((slot) => (
               <ChoiceChip
                 key={slot}
@@ -326,16 +272,15 @@ export const BookingForm = () => {
           </div>
         )}
         <p className="mt-3 text-sm text-muted">
-          Tiệm mở cửa {business.hours.open} – {business.hours.close}. Giờ muộn nhất tự điều chỉnh
-          theo thời lượng dịch vụ bạn chọn.
+          Tiệm mở cửa {business.hours.open} – {business.hours.close}.
         </p>
         {groupError(errors.time?.message, 'booking-time-error')}
       </fieldset>
 
-      {/* 6. Ghi chú */}
+      {/* 5. Ghi chú */}
       <fieldset className="min-w-0">
         <legend className={legendClass}>
-          <span className={stepClass}>06</span>Ghi chú
+          <span className={stepClass}>05</span>Ghi chú
         </legend>
         <TextareaField
           id="booking-note"
@@ -358,8 +303,9 @@ export const BookingForm = () => {
         </div>
       )}
 
-      <Button type="submit" size="lg" loading={isSubmitting} className="w-full sm:w-auto">
-        {isSubmitting ? 'Đang gửi…' : submitError ? 'Thử lại' : 'Xác nhận đặt lịch'}
+      <Button type="submit" size="lg" loading={isSubmitting} className="w-full">
+        {!isSubmitting && <CalendarCheck aria-hidden="true" className="size-5" />}
+        {isSubmitting ? 'Đang gửi…' : submitError ? 'Thử lại' : 'Đặt lịch'}
       </Button>
     </form>
   )

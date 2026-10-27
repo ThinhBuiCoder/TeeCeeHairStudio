@@ -5,7 +5,7 @@ const NotFoundPage = () => (
   <>
     <Seo
       title="Không tìm thấy trang | TEECEE HAIR STUDIO"
-      description="Trang bạn tìm không tồn tại. Quay về trang chủ TEECEE HAIR STUDIO để đặt lịch hoặc xem dịch vụ."
+      description="Trang bạn tìm không tồn tại. Quay về trang chủ TEECEE HAIR STUDIO để đặt lịch."
     />
     <section className="flex min-h-[70vh] items-center pt-24">
       <div className="container-page text-center">
@@ -17,7 +17,7 @@ const NotFoundPage = () => (
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <ButtonLink to="/">Về trang chủ</ButtonLink>
-          <ButtonLink to="/dat-lich" variant="outline">
+          <ButtonLink to={{ pathname: '/', hash: '#dat-lich' }} variant="outline">
             Đặt lịch
           </ButtonLink>
         </div>

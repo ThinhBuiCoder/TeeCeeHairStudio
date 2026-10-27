@@ -1,12 +1,43 @@
 import { ResponsiveImage } from '@/components/ui/ResponsiveImage'
 import { Reveal } from '@/components/ui/Reveal'
 import { SectionHeading } from '@/components/ui/SectionHeading'
-import { highlights } from '@/data/site'
+import { business } from '@/config/business'
+
+const stats = [
+  { value: `${business.hours.open} – ${business.hours.close}`, label: 'Mở cửa mỗi ngày' },
+]
 
 export const About = () => (
   <section id="gioi-thieu" aria-labelledby="about-title" className="py-20 md:py-28">
     <div className="container-page grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
       <Reveal>
+        <SectionHeading
+          id="about-title"
+          align="left"
+          eyebrow="Về TEECEE"
+          title={'Salon tóc nam cao cấp chuẩn phong cách Hàn Quốc'}
+        />
+        {/* TODO: câu chuyện thương hiệu do chủ tiệm viết lại; đoạn dưới là nội dung chung. */}
+        <p className="mt-5 text-lg text-muted">
+          TEECEE HAIR STUDIO là tiệm cắt tóc nam với đội ngũ chuyên nghiệp và nhiệt tình, cam kết sẽ
+          mang lại những kiểu tóc hài lòng nhất cho giới trẻ "yêu cái đẹp, yêu sự chỉnh chu và hiện
+          đại".
+        </p>
+
+        <dl className="mt-10 flex flex-wrap gap-x-12 gap-y-6">
+          {stats.map((stat) => (
+            <div key={stat.label}>
+              <dt className="sr-only">{stat.label}</dt>
+              <dd className="font-display text-4xl font-bold text-ink">{stat.value}</dd>
+              <dd className="mt-1 text-sm text-muted" aria-hidden="true">
+                {stat.label}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Reveal>
+
+      <Reveal delay={0.1}>
         <div className="mx-auto max-w-md mirror-frame p-2 lg:max-w-none">
           {/* TODO: ảnh dựng AI dùng tạm, thay bằng ảnh thật. */}
           <ResponsiveImage
@@ -17,44 +48,6 @@ export const About = () => (
           />
         </div>
       </Reveal>
-
-      <div>
-        <Reveal>
-          <SectionHeading
-            id="about-title"
-            align="left"
-            eyebrow="Về TEECEE"
-            title="Một chỗ cắt tóc đúng nghĩa"
-          />
-          {/* TODO: câu chuyện thương hiệu do chủ tiệm viết lại; đoạn dưới là nội dung chung. */}
-          <p className="mt-5 text-lg text-muted">
-            TEECEE HAIR STUDIO là tiệm cắt tóc nam theo phong cách hiện đại: tường trắng, ghế da
-            đen, gương lớn viền đèn ấm và nhiều cây xanh. Bạn ngồi xuống thoải mái, nói điều mình
-            muốn, và ra về gọn gàng đúng kiểu mình thích.
-          </p>
-        </Reveal>
-
-        <ul className="mt-10 space-y-7">
-          {highlights.map(({ icon: Icon, title, text }, index) => (
-            <li key={title}>
-              <Reveal delay={index * 0.08} className="flex gap-4">
-                <span
-                  aria-hidden="true"
-                  className="flex size-12 shrink-0 items-center justify-center rounded-full border border-gold-light text-gold-dark"
-                >
-                  <Icon className="size-5" />
-                </span>
-                <div>
-                  <h3 className="font-sans text-lg font-semibold tracking-normal text-ink">
-                    {title}
-                  </h3>
-                  <p className="mt-1 text-muted">{text}</p>
-                </div>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   </section>
 )

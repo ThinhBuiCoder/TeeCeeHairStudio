@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Wordmark } from '@/components/brand/Wordmark'
 import { AnchorLink } from '@/components/ui/AnchorLink'
-import { ButtonLink } from '@/components/ui/Button'
+import { buttonClasses } from '@/components/ui/buttonStyles'
 import { navItems } from '@/data/site'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
@@ -15,6 +15,7 @@ interface HeaderProps {
   overHero: boolean
 }
 
+/** Logo bên trái, menu bên phải, nút Đặt lịch luôn hiện (bố cục như trang tham khảo). */
 export const Header = ({ overHero }: HeaderProps) => {
   const scrolled = useScrolled(24)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -29,6 +30,8 @@ export const Header = ({ overHero }: HeaderProps) => {
     'inline-flex min-h-11 items-center text-sm font-medium transition-colors',
     transparent ? 'text-white/90 hover:text-white' : 'text-ink/80 hover:text-ink',
   )
+  // Nút Đặt lịch đã nằm riêng bên phải nên không lặp lại trong menu.
+  const menuItems = navItems.filter((item) => item.target !== 'dat-lich')
 
   return (
     <header
@@ -44,9 +47,9 @@ export const Header = ({ overHero }: HeaderProps) => {
           <Wordmark tone={transparent ? 'dark' : 'light'} size="sm" />
         </Link>
 
-        <nav aria-label="Điều hướng chính" className="hidden lg:block">
-          <ul className="flex items-center gap-7">
-            {navItems.map((item) => (
+        <nav aria-label="Điều hướng chính" className="ml-auto hidden lg:block">
+          <ul className="flex items-center gap-8">
+            {menuItems.map((item) => (
               <li key={item.target}>
                 <AnchorLink target={item.target} className={linkClass}>
                   {item.label}
@@ -57,9 +60,9 @@ export const Header = ({ overHero }: HeaderProps) => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <ButtonLink to="/dat-lich" variant={transparent ? 'gold' : 'primary'}>
+          <AnchorLink target="dat-lich" className={buttonClasses(transparent ? 'gold' : 'primary')}>
             Đặt lịch
-          </ButtonLink>
+          </AnchorLink>
           <button
             type="button"
             aria-expanded={menuOpen}
@@ -104,9 +107,6 @@ export const Header = ({ overHero }: HeaderProps) => {
               ))}
             </ul>
           </nav>
-          <ButtonLink to="/dat-lich" size="lg" className="mt-8 w-full" onClick={closeMenu}>
-            Đặt lịch ngay
-          </ButtonLink>
         </div>
       )}
     </header>

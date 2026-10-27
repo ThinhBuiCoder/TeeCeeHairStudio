@@ -1,53 +1,34 @@
-import { Armchair, Leaf, Wallet } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import type { ImageName } from '@/lib/images'
 import type { NavItem } from '@/types'
 
 export const navItems: NavItem[] = [
   { label: 'Giới thiệu', target: 'gioi-thieu' },
-  { label: 'Dịch vụ', target: 'dich-vu' },
-  { label: 'Bảng giá', target: 'bang-gia' },
-  { label: 'Thư viện', target: 'thu-vien' },
-  { label: 'Đội ngũ', target: 'doi-ngu' },
+  { label: 'Hình ảnh', target: 'hinh-anh' },
+  { label: 'Đặt lịch', target: 'dat-lich' },
   { label: 'Liên hệ', target: 'lien-he' },
 ]
 
 export interface Highlight {
-  icon: LucideIcon
+  imageName: ImageName
   title: string
   text: string
 }
 
+// TODO: nội dung chung, chủ tiệm viết lại theo thế mạnh thật của tiệm.
 export const highlights: Highlight[] = [
   {
-    icon: Leaf,
+    imageName: 'gallery-chairs',
     title: 'Không gian sạch sẽ',
     text: 'Tường trắng, gương lớn viền đèn ấm và nhiều cây xanh. Vào là thấy dễ chịu.',
   },
   {
-    icon: Armchair,
+    imageName: 'gallery-station',
     title: 'Thợ tay nghề tốt',
     text: 'Lắng nghe bạn muốn gì, tư vấn kiểu hợp khuôn mặt rồi mới xuống tay.',
   },
   {
-    icon: Wallet,
-    title: 'Giá hợp lý',
-    text: 'Cắt tóc 60K, gội đầu 30K. Giá niêm yết rõ ràng, không phát sinh.',
+    imageName: 'gallery-entrance',
+    title: 'Đặt lịch, không phải chờ',
+    text: 'Chọn ngày giờ online, tiệm xác nhận lại qua số điện thoại của bạn.',
   },
-]
-
-export interface ProcessStep {
-  title: string
-  text: string
-}
-
-export const processSteps: ProcessStep[] = [
-  {
-    title: 'Chọn dịch vụ',
-    text: 'Chọn một hoặc nhiều dịch vụ. Thời lượng và giá tạm tính hiện ngay.',
-  },
-  {
-    title: 'Chọn thợ và giờ',
-    text: 'Chọn thợ quen hoặc để tiệm sắp xếp, rồi chọn ngày giờ còn trống.',
-  },
-  { title: 'Nhận xác nhận', text: 'Tiệm dùng số điện thoại của bạn để xác nhận lịch hẹn.' },
 ]

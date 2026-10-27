@@ -16,7 +16,6 @@ export const buildHairSalonJsonLd = (): Record<string, unknown> => {
     name: business.fullName,
     description: business.description,
     image: '/og-image.jpg',
-    priceRange: business.priceRange,
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
