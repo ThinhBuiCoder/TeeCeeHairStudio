@@ -33,7 +33,7 @@ const linkClass =
   'font-medium text-ink underline decoration-gold underline-offset-4 hover:decoration-2'
 
 export const Contact = () => (
-  <section id="lien-he" aria-labelledby="contact-title" className="pb-20 md:pb-28">
+  <section id="lien-he" aria-labelledby="contact-title" className="py-20 md:py-28">
     <div className="container-page">
       <Reveal>
         <SectionHeading
